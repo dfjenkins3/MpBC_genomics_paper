@@ -1,0 +1,86 @@
+---
+title: 'MpBC Genomics Paper: Figure 2'
+author: "David Jenkins"
+date: "7/23/2018"
+output:
+  html_document:
+    code_folding: show
+    toc: true
+    toc_float: true
+    theme: "united"
+---
+
+## Load Packages
+
+```{r packages, results='hide', message=FALSE, warning=FALSE}
+library(RColorBrewer)
+library(ComplexHeatmap)
+```
+
+## Load Data
+
+```{r data}
+#Annotation data
+sample_annot <- read.table(file.path("..", "data", "sample_annotation.txt"),
+                           header=T, sep="\t", row.names = 1)
+
+#ASSIGN Scores, GFRN Pathways adaptF
+nsolver_assign_adaptF_ALL <- read.table(
+  file.path("..","data","adaptF_ALL_GFRN_pathway_signatures_ASSIGN.txt"),
+  header = T, sep="\t", row.names = 1)
+colnames(nsolver_assign_adaptF_ALL) <- gsub(
+  "\\.", "-",colnames(nsolver_assign_adaptF_ALL))
+
+#ASSIGN Scores, Literature Signatures
+genelist_sigs_all <- read.table(
+  file.path("..","data","adaptT_ALL_geneList_signatures_ASSIGN.txt"),
+  header = T, sep="\t", row.names = 1)
+colnames(genelist_sigs_all) <- gsub(
+  "\\.", "-",colnames(nsolver_assign_adaptF_ALL))
+
+if(!all(colnames(nsolver_assign_adaptF_ALL) == rownames(sample_annot))){
+  stop("Annotation data and ASSIGN nanostring scores do not match")
+}
+if(!all(colnames(genelist_sigs_all) == rownames(sample_annot))){
+  stop("Annotation data and ASSIGN genelist scores do not match")
+}
+```
+
+## Figure 2
+
+```{r figure, fig.width=7, fig.height=7}
+topha2 <- HeatmapAnnotation(
+  df = data.frame(sample_annot),
+  col = list(PIK3CA = c("1" = RColorBrewer::brewer.pal(8, "Set1")[1],
+                        "0" = "white",
+                        "no data" = "darkgrey"),
+             TP53 = c("1" = RColorBrewer::brewer.pal(8, "Set1")[2],
+                      "0" = "white",
+                      "no data" = "darkgrey"),
+             Misc = c("no data" = "darkgrey",
+                      "none" = "white",
+                      "APC, AKT1" = RColorBrewer::brewer.pal(8, "Set2")[1],
+                      "ATM, STK11" = RColorBrewer::brewer.pal(8, "Set2")[2],
+                      "ERBB3, BAP1, RB1" = RColorBrewer::brewer.pal(8, "Set2")[3],
+                      "FGFR3" = RColorBrewer::brewer.pal(8, "Set2")[4],
+                      "HRAS" = RColorBrewer::brewer.pal(8, "Set2")[5],
+                      "JAK3" = RColorBrewer::brewer.pal(8, "Set2")[6],
+                      "MET" = RColorBrewer::brewer.pal(8, "Set2")[7],
+                      "PTEN" = "purple"),
+             Subtype = c("Mesenchymal" = "#08738C",
+                         "Mixed Spi + Squ" = "#750174",
+                         "Spindle Cell" = "#000274",
+                         "Squamous" = "#8282FF",
+                         "TNBC" = "#7D0C14")),
+  height = unit(1.667, "cm"), show_legend = T, show_annotation_name = TRUE)
+
+
+fig2 <- draw(Heatmap(rbind(nsolver_assign_adaptF_ALL, genelist_sigs_all),
+                     cluster_rows = T, top_annotation = topha2,
+                     name="Pathway\nActivity"),
+     annotation_legend_side="bottom", split = rep(c("adaptF", "adaptT"), c(8,3)))
+
+pdf("figure_2.pdf", width = 7, height = 7)
+fig2
+dev.off()
+```
