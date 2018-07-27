@@ -1,0 +1,138 @@
+---
+title: 'MpBC Genomics Paper: Signature Figure'
+author: "David Jenkins"
+date: "7/23/2018"
+output:
+  html_document:
+    code_folding: show
+    toc: true
+    toc_float: true
+    theme: "united"
+---
+
+## Load Packages
+
+```{r packages, results='hide', message=FALSE, warning=FALSE}
+library(RColorBrewer)
+library(ComplexHeatmap)
+library(multipanelfigure)
+```
+
+## Signatures {.tabset}
+
+```{r data}
+plotTraining <- function(output.data, pathway_number, pathway){
+  row_order <- order(output.data$processed.data$S_matrix[,pathway_number], decreasing = T)
+  data <- output.data$processed.data$trainingData_sub[row_order,]
+  prior <- output.data$processed.data$S_matrix[row_order,pathway_number]
+  priorprob <- output.data$processed.data$Delta_matrix[row_order,pathway_number]
+  data <- data[priorprob == 1,]
+  prior <- prior[priorprob == 1]
+  ha <- columnAnnotation(
+    assign_pred = column_anno_barplot(
+      output.data$mcmc.pos.mean.trainingData$beta_pos[,pathway_number],
+      baseline = 0, bar_width=1, gp = gpar(fill = "purple")))
+  colnames(data) <- gsub("_FOR_AKT", "", colnames(data))
+  colnames(data) <- gsub("_18HR", "", colnames(data))
+  colnames(data) <- gsub("_36HR", "", colnames(data))
+  draw(rowAnnotation(
+    barplotprior=row_anno_barplot(
+      prior, baseline = 0, axis_direction="reverse", bar_width=1,
+      gp = gpar(fill = ifelse(prior > 0, "#e6bbad", "#add8e6"),
+                col = ifelse(prior > 0, "#8b0000", "#008b8b")), axis=T),
+    width = unit(1.5, "cm"), gap=unit(0.1,"cm")) + 
+    Heatmap(t(scale(t(data))),
+            name=pathway,
+            row_names_gp = gpar(fontsize = 8),
+            cluster_rows = FALSE,
+            cluster_columns = FALSE,
+            show_row_names = FALSE,
+            show_column_names = TRUE), row_title = "            Change in Expression")
+}
+
+
+```
+
+### AKT
+
+```{r akt, fig.width=4}
+akt_res <- readRDS("../results/akt_gene_list_adaptS_FALSE/output.rds")
+aktplot <- plotTraining(akt_res, 1, "AKT")
+
+```
+
+### BAD
+
+```{r bad, fig.width=4}
+bad_res <- readRDS("../results/bad_gene_list_adaptS_FALSE/output.rds")
+badplot <- plotTraining(bad_res, 1, "BAD")
+```
+
+### BIM
+
+```{r bim, fig.width=4}
+bim_res <- readRDS("../results/bim_gene_list_adaptS_FALSE/output.rds")
+bimplot <- plotTraining(bim_res, 1, "BIM")
+```
+
+### HER2
+
+```{r her2, fig.width=4}
+her2_res <- readRDS("../results/her2_gene_list_adaptS_FALSE/output.rds")
+her2plot <- plotTraining(her2_res, 1, "HER2")
+```
+
+### IGF1R
+
+```{r igf1r, fig.width=4}
+igf1r_res <- readRDS("../results/igf1r_gene_list_adaptS_FALSE/output.rds")
+igf1rplot <- plotTraining(igf1r_res, 1, "IGF1R")
+```
+
+### KRASGV
+
+```{r krasgv, fig.width=4}
+krasgv_res <- readRDS("../results/krasgv_gene_list_adaptS_FALSE/output.rds")
+krasplot <- plotTraining(krasgv_res, 1, "KRASGV")
+```
+
+### RAF
+
+```{r raf, fig.width=4}
+raf_res <- readRDS("../results/raf_gene_list_adaptS_FALSE/output.rds")
+rafplot <- plotTraining(raf_res, 1, "RAF")
+```
+
+### SNAIL
+
+```{r snail, fig.width=4}
+snail_res <- readRDS("../results/snail_gene_list_adaptS_FALSE/output.rds")
+snailplot <- plotTraining(snail_res, 1, "SNAIL")
+```
+
+## Big Plot
+
+```{r bigplot, fig.width=13, fig.height=7, message=FALSE, warning=FALSE}
+figure2 <- multi_panel_figure(
+  width = 13,
+  columns = 4,
+  height = 7,
+  rows = 2,
+  figure_name = "figure2",
+  unit="inches")
+figure2 <- fill_panel(figure2, aktplot, scaling = "shrink")
+figure2 <- fill_panel(figure2, badplot, scaling = "shrink")
+figure2 <- fill_panel(figure2, bimplot, scaling = "shrink")
+figure2 <- fill_panel(figure2, her2plot, scaling = "shrink")
+figure2 <- fill_panel(figure2, igf1rplot, scaling = "shrink")
+figure2 <- fill_panel(figure2, krasplot, scaling = "shrink")
+figure2 <- fill_panel(figure2, rafplot, scaling = "shrink")
+figure2 <- fill_panel(figure2, snailplot, scaling = "shrink")
+
+ggplot2::ggsave(
+  "figure_signatures.pdf", figure2,
+  width = figure_width(figure2, "in"),
+  height = figure_height(figure2, "in"))
+
+figure2
+```
