@@ -22,7 +22,8 @@ library(multipanelfigure)
 
 ```{r data}
 plotTraining <- function(output.data, pathway_number, pathway){
-  row_order <- order(output.data$processed.data$S_matrix[,pathway_number], decreasing = T)
+  row_order <- order(output.data$processed.data$S_matrix[,pathway_number],
+                     decreasing = T)
   data <- output.data$processed.data$trainingData_sub[row_order,]
   prior <- output.data$processed.data$S_matrix[row_order,pathway_number]
   priorprob <- output.data$processed.data$Delta_matrix[row_order,pathway_number]
@@ -47,7 +48,8 @@ plotTraining <- function(output.data, pathway_number, pathway){
             cluster_rows = FALSE,
             cluster_columns = FALSE,
             show_row_names = FALSE,
-            show_column_names = TRUE), row_title = "            Change in Expression")
+            show_column_names = TRUE),
+    row_title = "            Change in Expression")
 }
 
 
@@ -113,26 +115,26 @@ snailplot <- plotTraining(snail_res, 1, "SNAIL")
 ## Big Plot
 
 ```{r bigplot, fig.width=13, fig.height=7, message=FALSE, warning=FALSE}
-figure2 <- multi_panel_figure(
+figure_signatures <- multi_panel_figure(
   width = 13,
   columns = 4,
   height = 7,
   rows = 2,
-  figure_name = "figure2",
+  figure_name = "figure_signatures",
   unit="inches")
-figure2 <- fill_panel(figure2, aktplot, scaling = "shrink")
-figure2 <- fill_panel(figure2, badplot, scaling = "shrink")
-figure2 <- fill_panel(figure2, bimplot, scaling = "shrink")
-figure2 <- fill_panel(figure2, her2plot, scaling = "shrink")
-figure2 <- fill_panel(figure2, igf1rplot, scaling = "shrink")
-figure2 <- fill_panel(figure2, krasplot, scaling = "shrink")
-figure2 <- fill_panel(figure2, rafplot, scaling = "shrink")
-figure2 <- fill_panel(figure2, snailplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, aktplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, badplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, bimplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, her2plot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, igf1rplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, krasplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, rafplot, scaling = "shrink")
+figure_signatures <- fill_panel(figure_signatures, snailplot, scaling = "shrink")
 
 ggplot2::ggsave(
-  "figure_signatures.pdf", figure2,
-  width = figure_width(figure2, "in"),
-  height = figure_height(figure2, "in"))
+  "figure_signatures.pdf", figure_signatures,
+  width = figure_width(figure_signatures, "in"),
+  height = figure_height(figure_signatures, "in"))
 
-figure2
+figure_signatures
 ```
