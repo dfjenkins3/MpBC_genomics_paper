@@ -77,8 +77,7 @@ topha2 <- HeatmapAnnotation(
 
 fig2 <- draw(Heatmap(rbind(nsolver_assign_adaptF_ALL, genelist_sigs_all),
                      cluster_rows = T, top_annotation = topha2,
-                     name="Pathway\nActivity",
-                     cluster_columns = hclust(dist(t(nsolver_assign_adaptF_ALL)))),
+                     name="Pathway\nActivity"),
      annotation_legend_side="bottom", split = rep(c("adaptF", "adaptT"), c(8,3)))
 
 pdf("figure_2.pdf", width = 7, height = 7)
