@@ -75,12 +75,21 @@ topha2 <- HeatmapAnnotation(
   height = unit(1.667, "cm"), show_legend = T, show_annotation_name = TRUE)
 
 
-fig2 <- draw(Heatmap(rbind(nsolver_assign_adaptF_ALL, genelist_sigs_all),
-                     cluster_rows = T, top_annotation = topha2,
-                     name="Pathway\nActivity"),
-     annotation_legend_side="bottom", split = rep(c("adaptF", "adaptT"), c(8,3)))
+fig2_a <- draw(Heatmap(nsolver_assign_adaptF_ALL, cluster_rows = T,
+                       top_annotation = topha2, name="Pathway\nActivity"),
+               annotation_legend_side="bottom")
 
-pdf("figure_2.pdf", width = 7, height = 7)
-fig2
+pdf("figure_2a.pdf", width = 7, height = 7)
+fig2_a
+dev.off()
+```
+
+```{r fig.height=5}
+fig2_b <- draw(Heatmap(genelist_sigs_all, cluster_rows = T,
+                       top_annotation = topha2, name="Pathway\nActivity"),
+               annotation_legend_side="bottom")
+
+pdf("figure_2b.pdf", width = 7, height = 5)
+fig2_b
 dev.off()
 ```
