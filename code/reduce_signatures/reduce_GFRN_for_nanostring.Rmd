@@ -1,0 +1,547 @@
+---
+title: "Reducing GFRN Gene Lists for Nanostring"
+author: "David Jenkins"
+date: "4/10/2017"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: "united"
+---
+
+```{r, echo=FALSE}
+library(ggplot2)
+load("../../results/session_done_tcga.RData")
+#bad not used
+results$tcga_bad_Bad_pS112 <- NULL
+
+print_corr_df <- function(indf){
+  data.frame(Pathway=c(rep(colnames(indf)[1],3),
+                     rep(colnames(indf)[2],3),
+                     rep(colnames(indf)[3],3),
+                     rep(colnames(indf)[4],2),
+                     rep(colnames(indf)[5],4),
+                     rep(colnames(indf)[6],4),
+                     rep(colnames(indf)[7],3)),
+           Genes=c(rep(as.numeric(indf[,1:7])[1],3),
+                   rep(as.numeric(indf[,1:7])[2],3),
+                   rep(as.numeric(indf[,1:7])[3],3),
+                   rep(as.numeric(indf[,1:7])[4],2),
+                   rep(as.numeric(indf[,1:7])[5],4),
+                   rep(as.numeric(indf[,1:7])[6],4),
+                   rep(as.numeric(indf[,1:7])[7],3)),
+           Protein=c("Akt","PDK1","PDK1_pS241",
+                     "Akt","PDK1","PDK1_pS241",
+                     "EGFR","EGFR_pY1068","EGFR_pY1173",
+                     "HER2","HER2_pY1248",
+                     "IRS1","IGF1R","PDK1","PDK1_pS241",
+                     "EGFR","EGFR_pY1068","EGFR_pY1173","MEK1",
+                     "MEK1","PKC.alpha","PKC.alpha_pS657"),
+           ICBP.cor=c(as.numeric(indf[,10:48])[1:8],
+                      NA,
+                      as.numeric(indf[,10:48])[9:10],
+                      NA,
+                      as.numeric(indf[,10:48])[11:15],
+                      NA,
+                      NA,
+                      as.numeric(indf[,10:48])[16:18]),
+           TCGA.cor=c(as.numeric(indf[,10:48])[19:30],
+                      NA,
+                      as.numeric(indf[,10:48])[31:39]))
+}
+
+compare_two_corrs <- function(optimizedf, comparetodf){
+  optdf <- print_corr_df(optimizedf)
+  compdf <-  print_corr_df(comparetodf)
+  res <- cbind(compdf,data.frame(ICBP.diff=compdf[,4] - optdf[,4],
+                                 TCGA.diff=compdf[,5] - optdf[,5]))
+}
+```
+
+## Optimized Pathways
+
+The GFRN Pathways Optimized in the Genome Medice Paper are as follows:
+
+```{r, results='asis'}
+knitr::kable(print_corr_df(results[1096704,]))
+```
+
+The seven pathway signatures contain a total of __980 genes__, but because of
+overlapping genes in the signatures there are a total of __759 unique genes__ in
+this set of signatures.
+
+To port these signatures onto the nanostring, we want to reduce the number of
+unique probes that are needed for this set of signatures. For example, here are
+the correlations if all signatures had 10 genes (54 unique genes):
+
+```{r, results='asis'}
+knitr::kable(compare_two_corrs(results[1096704,], results[70958,]))
+```
+
+
+## Reduce by Summed Correlation {.tabset}
+
+If we sum the correlation to each of the proteins of interest, the optimized
+pathway list has a total correlation of 14.8795. We can compare this summed
+correlation to the summed correlation values for all smaller pathway list
+correlations (there are a total of 1 million possible smaller gene list
+combinations based on the ASSIGn results calculated during pathway optimizations:)
+
+```{r, echo=FALSE}
+results$sum_all_cor <- rowSums(results[,10:48])
+
+d <- ggplot(results, aes(sum_nooverlap, sum_all_cor))
+d + stat_binhex(bins=250) + 
+  scale_fill_gradientn(colours = c("darkblue","white","darkred")) + 
+  xlab("Number Unique Genes") + 
+  ylab("Summed Correlation")
+```
+
+### 1 to 50 genes
+
+```{r,  echo=F, results='asis'}
+best_cor_per_genelist <-data.frame(numgenes=rep(0,729), maxcor=rep(0,729))
+j <- 1
+for (i in sort(unique(results$sum_nooverlap))){
+  subset <- results[results$sum_nooverlap == i,]
+  max(subset$sum_all_cor)
+  best_cor_per_genelist[j,] <- c(i,max(subset$sum_all_cor))
+  j <- j+1
+}
+
+find_optimal_reduced_list <- function(min, max, s=F){
+  bestcor <- max(best_cor_per_genelist[which(best_cor_per_genelist$numgenes >=min & best_cor_per_genelist$numgenes <=max),2])
+  bestlen <- best_cor_per_genelist[which(best_cor_per_genelist$maxcor == bestcor),1]
+  if(s){
+    paste("The best pathway list between",min,"and",max, "is", bestlen,"with a summed correlation of",bestcor, sep=" ")
+  }else{
+    which(results$sum_all_cor == bestcor & results$sum_nooverlap == bestlen)
+  }
+}
+
+find_optimal_reduced_list(1,50, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(1,50),]))
+```
+
+### 51 to 100 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(51,100, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(51,100),]))
+```
+
+### 101 - 150 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(101,150, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(101,150),]))
+```
+
+### 151 - 200 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(151,200, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(151,200),]))
+```
+
+### 201 - 250 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(201,250, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(201,250),]))
+```
+
+### 251 - 300 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(251,300, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(251,300),]))
+```
+
+### 301 - 400 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(301,400, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(301,400),]))
+```
+
+### 401 - 500 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(401,500, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(401,500),]))
+```
+
+### 501 - 600 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(501,600, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(501,600),]))
+```
+
+### 601 - 700 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list(601,700, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list(601,700),]))
+```
+
+## Reduce by Average Correlation {.tabset}
+
+```{r, echo=F}
+results$icbp_akt_AVG    <- apply(results[,10:12], 1, mean)
+results$icbp_bad_AVG    <- apply(results[,13:15], 1, mean)
+results$icbp_egfr_AVG   <- apply(results[,16:17], 1, mean)
+results$icbp_her2_AVG   <- apply(results[,18:19], 1, mean)
+results$icbp_igf1r_AVG  <- apply(results[,20:22], 1, mean)
+results$icbp_krasgv_AVG <- apply(results[,23:24], 1, mean)
+results$icbp_raf_AVG    <- apply(results[,25:27], 1, mean)
+results$tcga_akt_AVG    <- apply(results[,28:30], 1, mean)
+results$tcga_bad_AVG    <- apply(results[,31:33], 1, mean)
+results$tcga_egfr_AVG   <- apply(results[,34:36], 1, mean)
+results$tcga_her2_AVG   <- apply(results[,37:38], 1, mean)
+results$tcga_igf1r_AVG  <- apply(results[,39:41], 1, mean)
+results$tcga_krasgv_AVG <- apply(results[,42:45], 1, mean)
+results$tcga_raf_AVG    <- apply(results[,46:48], 1, mean)
+results$icbp_AVG_SUM <- rowSums(results[,50:56])
+results$tcga_AVG_SUM <- rowSums(results[,57:63])
+results$all_AVG_SUM  <- rowSums(results[,64:65])
+
+d <- ggplot(results, aes(sum_nooverlap, all_AVG_SUM))
+d + stat_binhex(bins=250) + 
+  scale_fill_gradientn(colours = c("darkblue","white","darkred")) + 
+  xlab("Number Unique Genes") + 
+  ylab("Summed Correlation")
+```
+
+### 1 to 50 genes
+
+```{r,  echo=F, results='asis'}
+best_cor_per_genelist2 <-data.frame(numgenes=rep(0,729), maxcor=rep(0,729))
+j <- 1
+for (i in sort(unique(results$sum_nooverlap))){
+  subset <- results[results$sum_nooverlap == i,]
+  max(subset$all_AVG_SUM)
+  best_cor_per_genelist2[j,] <- c(i,max(subset$all_AVG_SUM))
+  j <- j+1
+}
+
+find_optimal_reduced_list2 <- function(min, max, s=F){
+  bestcor <- max(best_cor_per_genelist2[which(best_cor_per_genelist2$numgenes >=min & best_cor_per_genelist2$numgenes <=max),2])
+  bestlen <- best_cor_per_genelist2[which(best_cor_per_genelist2$maxcor == bestcor),1]
+  if(s){
+    paste("The best pathway list between",min,"and",max, "is", bestlen,"with a summed correlation of",bestcor, sep=" ")
+  }else{
+    which(results$all_AVG_SUM == bestcor & results$sum_nooverlap == bestlen)
+  }
+}
+
+find_optimal_reduced_list2(1,50, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(1,50),]))
+```
+
+### 51 to 100 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(51,100, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(51,100),]))
+```
+
+### 101 - 150 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(101,150, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(101,150),]))
+```
+
+### 151 - 200 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(151,200, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(151,200),]))
+```
+
+### 201 - 250 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(201,250, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(201,250),]))
+```
+
+### 251 - 300 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(251,300, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(251,300),]))
+```
+
+### 301 - 400 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(301,400, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(301,400),]))
+```
+
+### 401 - 500 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(401,500, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(401,500),]))
+```
+
+### 501 - 600 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(501,600, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(501,600),]))
+```
+
+### 601 - 700 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list2(601,700, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list2(601,700),]))
+```
+
+## Reduce by Average Correlation, TCGA Only  {.tabset}
+
+```{r, echo=F}
+d <- ggplot(results, aes(sum_nooverlap, tcga_AVG_SUM))
+d + stat_binhex(bins=250) + 
+  scale_fill_gradientn(colours = c("darkblue","white","darkred")) + 
+  xlab("Number Unique Genes") + 
+  ylab("Summed Correlation")
+```
+
+
+### 1 to 50 genes
+
+```{r,  echo=F, results='asis'}
+best_cor_per_genelist3 <-data.frame(numgenes=rep(0,729), maxcor=rep(0,729))
+j <- 1
+for (i in sort(unique(results$sum_nooverlap))){
+  subset <- results[results$sum_nooverlap == i,]
+  max(subset$tcga_AVG_SUM)
+  best_cor_per_genelist3[j,] <- c(i,max(subset$tcga_AVG_SUM))
+  j <- j+1
+}
+
+find_optimal_reduced_list3 <- function(min, max, s=F){
+  bestcor <- max(best_cor_per_genelist3[which(best_cor_per_genelist3$numgenes >=min & best_cor_per_genelist3$numgenes <=max),2])
+  bestlen <- best_cor_per_genelist3[which(best_cor_per_genelist3$maxcor == bestcor),1]
+  if(s){
+    paste("The best pathway list between",min,"and",max, "is", bestlen,"with a summed correlation of",bestcor, sep=" ")
+  }else{
+    which(results$tcga_AVG_SUM == bestcor & results$sum_nooverlap == bestlen)
+  }
+}
+
+find_optimal_reduced_list3(1,50, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(1,50),]))
+```
+
+### 51 to 100 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(51,100, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(51,100),]))
+```
+
+### 101 - 150 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(101,150, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(101,150),]))
+```
+
+### 151 - 200 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(151,200, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(151,200),]))
+```
+
+### 201 - 250 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(201,250, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(201,250),]))
+```
+
+### 251 - 300 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(251,300, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(251,300),]))
+```
+
+### 301 - 400 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(301,400, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(301,400),]))
+```
+
+### 401 - 500 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(401,500, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(401,500),]))
+```
+
+### 501 - 600 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(501,600, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(501,600),]))
+```
+
+### 601 - 700 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list3(601,700, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list3(601,700),]))
+```
+
+
+## Reduce by Average Correlation, ICBP Only {.tabset}
+
+```{r, echo=F}
+d <- ggplot(results, aes(sum_nooverlap, icbp_AVG_SUM))
+d + stat_binhex(bins=250) + 
+  scale_fill_gradientn(colours = c("darkblue","white","darkred")) + 
+  xlab("Number Unique Genes") + 
+  ylab("Summed Correlation")
+```
+
+
+
+### 1 to 50 genes
+
+```{r,  echo=F, results='asis'}
+best_cor_per_genelist4 <-data.frame(numgenes=rep(0,729), maxcor=rep(0,729))
+j <- 1
+for (i in sort(unique(results$sum_nooverlap))){
+  subset <- results[results$sum_nooverlap == i,]
+  max(subset$icbp_AVG_SUM)
+  best_cor_per_genelist4[j,] <- c(i,max(subset$icbp_AVG_SUM))
+  j <- j+1
+}
+
+find_optimal_reduced_list4 <- function(min, max, s=F){
+  bestcor <- max(best_cor_per_genelist4[which(best_cor_per_genelist4$numgenes >=min & best_cor_per_genelist4$numgenes <=max),2])
+  bestlen <- best_cor_per_genelist4[which(best_cor_per_genelist4$maxcor == bestcor),1]
+  if(s){
+    paste("The best pathway list between",min,"and",max, "is", bestlen,"with a summed correlation of",bestcor, sep=" ")
+  }else{
+    which(results$icbp_AVG_SUM == bestcor & results$sum_nooverlap == bestlen)
+  }
+}
+
+find_optimal_reduced_list4(1,50, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(1,50),]))
+```
+
+### 51 to 100 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(51,100, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(51,100),]))
+```
+
+### 101 - 150 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(101,150, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(101,150),]))
+```
+
+### 151 - 200 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(151,200, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(151,200),]))
+```
+
+### 201 - 250 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(201,250, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(201,250),]))
+```
+
+### 251 - 300 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(251,300, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(251,300),]))
+```
+
+### 301 - 400 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(301,400, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(301,400),]))
+```
+
+### 401 - 500 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(401,500, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(401,500),]))
+```
+
+### 501 - 600 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(501,600, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(501,600),]))
+```
+
+### 601 - 700 genes
+
+```{r,  echo=F, results='asis'}
+find_optimal_reduced_list4(601,700, T)
+
+knitr::kable(compare_two_corrs(results[1096704,], results[find_optimal_reduced_list4(601,700),]))
+```
+
