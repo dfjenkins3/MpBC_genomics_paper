@@ -132,7 +132,7 @@ figure_signatures <- fill_panel(figure_signatures, rafplot, scaling = "shrink")
 figure_signatures <- fill_panel(figure_signatures, snailplot, scaling = "shrink")
 
 ggplot2::ggsave(
-  "figure_signatures.pdf", figure_signatures,
+  "figure_2.pdf", figure_signatures,
   width = figure_width(figure_signatures, "in"),
   height = figure_height(figure_signatures, "in"))
 

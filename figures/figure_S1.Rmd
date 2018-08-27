@@ -65,7 +65,7 @@ resultplots <- list(create_correlation_plot(icbp_predictions, "akt_20", torun[1]
                  create_correlation_plot(icbp_predictions, "krasgv_200", torun[6]),
                  create_correlation_plot(icbp_predictions, "raf_350", torun[7]))
 do.call(grid.arrange, resultplots)
-pdf("figure_correlate_reduced_ASSIGN_results_icbp.pdf", width = 10, height = 7)
+pdf("figure_S1a_icbp.pdf", width = 10, height = 7)
 do.call(grid.arrange, resultplots)
 dev.off()
 ```
@@ -90,7 +90,7 @@ resultplots <- list(create_correlation_plot(tcga_predictions, "akt_20", torun[1]
                  create_correlation_plot(tcga_predictions, "krasgv_200", torun[6]),
                  create_correlation_plot(tcga_predictions, "raf_350", torun[7]))
 do.call(grid.arrange, resultplots)
-pdf("figure_correlate_reduced_ASSIGN_results_tcga.pdf", width = 10, height = 7)
+pdf("figure_S1b_tcga.pdf", width = 10, height = 7)
 do.call(grid.arrange, resultplots)
 dev.off()
 ```
