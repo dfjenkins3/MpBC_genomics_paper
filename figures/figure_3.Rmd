@@ -1,5 +1,5 @@
 ---
-title: 'MpBC Genomics Paper: Figure 2'
+title: 'MpBC Genomics Paper: Figure 3'
 author: "David Jenkins"
 date: "7/23/2018"
 output:
@@ -46,7 +46,7 @@ if(!all(colnames(genelist_sigs_all) == rownames(sample_annot))){
 }
 ```
 
-## Figure 2
+## Figure 3
 
 ```{r figure, fig.width=7, fig.height=7}
 topha2 <- HeatmapAnnotation(
@@ -75,21 +75,21 @@ topha2 <- HeatmapAnnotation(
   height = unit(1.667, "cm"), show_legend = T, show_annotation_name = TRUE)
 
 
-fig2_a <- draw(Heatmap(nsolver_assign_adaptF_ALL, cluster_rows = T,
+fig3_a <- draw(Heatmap(nsolver_assign_adaptF_ALL, cluster_rows = T,
                        top_annotation = topha2, name="Pathway\nActivity"),
                annotation_legend_side="bottom")
 
-pdf("figure_2a.pdf", width = 7, height = 7)
-fig2_a
+pdf("figure_3a.pdf", width = 7, height = 7)
+fig3_a
 dev.off()
 ```
 
 ```{r fig.height=5}
-fig2_b <- draw(Heatmap(genelist_sigs_all, cluster_rows = T,
+fig3_b <- draw(Heatmap(genelist_sigs_all, cluster_rows = T,
                        top_annotation = topha2, name="Pathway\nActivity"),
                annotation_legend_side="bottom")
 
-pdf("figure_2b.pdf", width = 7, height = 5)
-fig2_b
+pdf("figure_3b.pdf", width = 7, height = 5)
+fig3_b
 dev.off()
 ```
