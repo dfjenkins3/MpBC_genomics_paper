@@ -37,35 +37,35 @@ get_path_cor <- function(indata, optimized, coly){
   return(corres)
 }
 
-create_correlation_plot <- function(indata, optimized, coly){
+create_correlation_plot <- function(indata, optimized, coly, dataset){
   pathway <- toupper(unlist(strsplit(optimized, "_"))[1])
   optnum <-  unlist(strsplit(optimized, "_"))[2]
   compnum <- unlist(strsplit(coly, "_"))[2]
   corres <- as.numeric(cor.test(indata[,optimized], indata[,coly])$estimate)
   plot <- ggplot(indata, aes_string(x=optimized, y=coly)) +
-    geom_point() + xlim(c(0,1)) + ylim(c(0,1)) + ggtitle(paste0("Pathway: ",pathway," ",optnum," vs. ", compnum," - cor: ", round(corres,3))) + 
+    geom_point() + xlim(c(0,1)) + ylim(c(0,1)) + ggtitle(paste0(dataset, ": ",pathway," ",optnum," vs. ", compnum," - cor: ", round(corres,3))) + 
+    xlab(gsub("_", " ",toupper(optimized))) +
+    ylab(gsub("_", " ",toupper(coly))) +
     theme(plot.title = element_text(size = 10))
   return(plot)
 }
 
-torun <- c("akt_20", "bad_15", "egfr_10", "her2_10", "igf1r_20", "krasgv_75", "raf_50")
+torun <- c("akt_20", "bad_15", "her2_10", "igf1r_20", "krasgv_75", "raf_50")
 pathcors <- c(get_path_cor(icbp_predictions, "akt_20", torun[1]),
               get_path_cor(icbp_predictions, "bad_250", torun[2]),
-              get_path_cor(icbp_predictions, "egfr_50", torun[3]),
-              get_path_cor(icbp_predictions, "her2_10", torun[4]),
-              get_path_cor(icbp_predictions, "igf1r_100", torun[5]),
-              get_path_cor(icbp_predictions, "krasgv_200", torun[6]),
-              get_path_cor(icbp_predictions, "raf_350", torun[7]))
+              get_path_cor(icbp_predictions, "her2_10", torun[3]),
+              get_path_cor(icbp_predictions, "igf1r_100", torun[4]),
+              get_path_cor(icbp_predictions, "krasgv_200", torun[5]),
+              get_path_cor(icbp_predictions, "raf_350", torun[6]))
 corbardata <- data.frame(Sample=factor(torun, levels = torun), Cor=pathcors)
-resultplots <- list(create_correlation_plot(icbp_predictions, "akt_20", torun[1]),
-                 create_correlation_plot(icbp_predictions, "bad_250", torun[2]),
-                 create_correlation_plot(icbp_predictions, "egfr_50", torun[3]),
-                 create_correlation_plot(icbp_predictions, "her2_10", torun[4]),
-                 create_correlation_plot(icbp_predictions, "igf1r_100", torun[5]),
-                 create_correlation_plot(icbp_predictions, "krasgv_200", torun[6]),
-                 create_correlation_plot(icbp_predictions, "raf_350", torun[7]))
+resultplots <- list(create_correlation_plot(icbp_predictions, "akt_20", torun[1], "ICBP"),
+                 create_correlation_plot(icbp_predictions, "bad_250", torun[2], "ICBP"),
+                 create_correlation_plot(icbp_predictions, "her2_10", torun[3], "ICBP"),
+                 create_correlation_plot(icbp_predictions, "igf1r_100", torun[4], "ICBP"),
+                 create_correlation_plot(icbp_predictions, "krasgv_200", torun[5], "ICBP"),
+                 create_correlation_plot(icbp_predictions, "raf_350", torun[6], "ICBP"))
 do.call(grid.arrange, resultplots)
-pdf("figure_S1a_icbp.pdf", width = 10, height = 7)
+pdf("figure_S1a_icbp.pdf", width = 7, height = 10)
 do.call(grid.arrange, resultplots)
 dev.off()
 ```
@@ -76,21 +76,19 @@ dev.off()
 ```{r warning=FALSE, message=FALSE, fig.height=12, fig.width=12}
 pathcors <- c(get_path_cor(tcga_predictions, "akt_20", torun[1]),
               get_path_cor(tcga_predictions, "bad_250", torun[2]),
-              get_path_cor(tcga_predictions, "egfr_50", torun[3]),
-              get_path_cor(tcga_predictions, "her2_10", torun[4]),
-              get_path_cor(tcga_predictions, "igf1r_100", torun[5]),
-              get_path_cor(tcga_predictions, "krasgv_200", torun[6]),
-              get_path_cor(tcga_predictions, "raf_350", torun[7]))
+              get_path_cor(tcga_predictions, "her2_10", torun[3]),
+              get_path_cor(tcga_predictions, "igf1r_100", torun[4]),
+              get_path_cor(tcga_predictions, "krasgv_200", torun[5]),
+              get_path_cor(tcga_predictions, "raf_350", torun[6]))
 corbardata <- data.frame(Sample=factor(torun, levels = torun), Cor=pathcors)
-resultplots <- list(create_correlation_plot(tcga_predictions, "akt_20", torun[1]),
-                 create_correlation_plot(tcga_predictions, "bad_250", torun[2]),
-                 create_correlation_plot(tcga_predictions, "egfr_50", torun[3]),
-                 create_correlation_plot(tcga_predictions, "her2_10", torun[4]),
-                 create_correlation_plot(tcga_predictions, "igf1r_100", torun[5]),
-                 create_correlation_plot(tcga_predictions, "krasgv_200", torun[6]),
-                 create_correlation_plot(tcga_predictions, "raf_350", torun[7]))
+resultplots <- list(create_correlation_plot(tcga_predictions, "akt_20", torun[1], "TCGA"),
+                 create_correlation_plot(tcga_predictions, "bad_250", torun[2], "TCGA"),
+                 create_correlation_plot(tcga_predictions, "her2_10", torun[3], "TCGA"),
+                 create_correlation_plot(tcga_predictions, "igf1r_100", torun[4], "TCGA"),
+                 create_correlation_plot(tcga_predictions, "krasgv_200", torun[5], "TCGA"),
+                 create_correlation_plot(tcga_predictions, "raf_350", torun[6], "TCGA"))
 do.call(grid.arrange, resultplots)
-pdf("figure_S1b_tcga.pdf", width = 10, height = 7)
+pdf("figure_S1b_tcga.pdf", width = 7, height = 10)
 do.call(grid.arrange, resultplots)
 dev.off()
 ```
