@@ -1,8 +1,7 @@
 rm(list=ls())
 setwd("C:/Users/zhang/Google Drive/Johnson_Pathway/emt_signatures_reproduce/")
 sapply(c("GEOquery", "hgu133a2.db"), require, character.only=TRUE)
-# R -v 3.4.4, sva -v 3.24.4, ASSIGN -v 1.12.0
-
+# R -v 3.
 
 ## Load data 
 # download expression set from GEO
