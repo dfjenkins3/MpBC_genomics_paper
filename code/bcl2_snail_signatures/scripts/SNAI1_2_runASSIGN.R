@@ -1,5 +1,7 @@
 rm(list=ls())
-setwd("/restricted/projectnb/pathsig/work/yuqingz/emtSig_v2/")
+setwd("/restricted/projectnb/pathsig/work/yuqingz/emtSig_reproduce/")
+sapply(c("sva", "ASSIGN"), require, character.only=TRUE)  
+# R -v 3.4.2, sva -v 3.24.4, ASSIGN -v 1.12.0
 
 
 ########  Load Signature Data  ########
@@ -29,14 +31,11 @@ sig_dat <- sig_dat[keep1 & keep2, ]
 
 
 # regular ComBat within signature
-source("scripts/ComBat.R")
-source("scripts/helper.R")
-sig_dat_adj <- ComBat(dat=sig_dat, batch=batch_sig, 
-                      mod=model.matrix(~as.factor(condition_sig)))
+sig_dat_adj <- ComBat(dat=sig_dat, batch=batch_sig, mod=model.matrix(~as.factor(condition_sig)))
 
 
 ## load test set
-load("new_val/val_Taube.RData")
+load("val_Taube.RData")
 
 overlap_genes <- intersect(rownames(sig_dat_adj), rownames(new.dat.mat))
 sig_dat_adj <- sig_dat_adj[overlap_genes, ]
@@ -72,20 +71,16 @@ print(sapply(val_indata, colnames))
 
 
 ########  ASSIGN  ########
-library(ASSIGN)
 ngene_seq <- c(10, 25, seq(from=0, to=500, by=50)[-1])
 source("scripts/runassign.R")
 
 excl_genes <- read.csv("freq_genes.csv", as.is=T)[, 1]
 exclGeneLst <- list(BCL2L11=excl_genes, BECN=excl_genes, SNAI=excl_genes, Twist=excl_genes)
 
-if(!dir.exists("./new_val/Excl_adST_2/")){
-  dir.create("./new_val/Excl_adST_2/")
-  dir.create("./new_val/Excl_adST_2/Val_Taube/")
-}
+if(!dir.exists("./results/")){dir.create("./results/")}
+if(!dir.exists("./results/Val_Taube/")){dir.create("./results/Val_Taube/")}
 
 for(ngene in ngene_seq){
   runassign(indata=val_indata, ngene=ngene, testname="Val_Taube",
-            outputpathname="./new_val/Excl_adST_2/", exclude_geneList=exclGeneLst)
+            outputpathname="./results/", exclude_geneList=exclGeneLst)
 }  
-
