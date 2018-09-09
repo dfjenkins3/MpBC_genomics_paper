@@ -45,7 +45,7 @@ print(identical(rownames(sig_dat_adj), rownames(val_mat)))
 ## ref ComBat between train & test, signature data as the reference
 batch_idx <- c(rep(1, ncol(sig_dat_adj)), rep(2, ncol(val_mat)))
 adjdat_cmb <- ComBat(cbind(sig_dat_adj, val_mat), batch=batch_idx, mod=NULL, ref.batch=1)
-print(sum(adjdat_cmb[,1:ncol(sig_dat_adj)] != sig_dat_adj))
+#print(sum(adjdat_cmb[,1:ncol(sig_dat_adj)] != sig_dat_adj))
 
 
 ## Create input data list, each pathway as an element

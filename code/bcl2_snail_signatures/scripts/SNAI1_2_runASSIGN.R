@@ -11,7 +11,7 @@ dat1 <- read.table(paste(data_path, "emtSignatures_GFP_BCL2L11_SNAI_Twist.tpmlog
 dat1 <- dat1[, -which(colnames(dat1)=="BCL2L11.9")]  # remove BCL2L11-9
 dat2 <- read.table(paste(data_path, "emtSignatures_GFP_BECN.tpmlog", sep=""),
                    header=TRUE, row.names="Gene")
-sum(rownames(dat1)!=rownames(dat2))
+identical(rownames(dat1), rownames(dat2))
 
 # combine two batches
 sig_dat <- cbind(dat1, dat2)
@@ -40,11 +40,11 @@ load("val_Taube.RData")
 overlap_genes <- intersect(rownames(sig_dat_adj), rownames(new.dat.mat))
 sig_dat_adj <- sig_dat_adj[overlap_genes, ]
 val_mat <- new.dat.mat[overlap_genes, ]
-print(sum(rownames(sig_dat_adj)!=rownames(val_mat)))
+print(identical(rownames(sig_dat_adj), rownames(val_mat)))
 
 ## take over-express test sub-set
 # change sample names to meaningful labels
-print(colnames(val_mat) == meta.info$Sample)
+#print(colnames(val_mat) == meta.info$Sample)
 colnames(val_mat) <- paste(meta.info$Pathway, meta.info$Rep, sep=".")
 # take subset
 sub_val_mat <- val_mat[, c(grep("pWZL", colnames(val_mat)),
@@ -55,7 +55,7 @@ sub_val_mat <- val_mat[, c(grep("pWZL", colnames(val_mat)),
 ## ref ComBat between train & test, signature data as the reference
 batch_idx <- c(rep(1, ncol(sig_dat_adj)), rep(2, ncol(sub_val_mat)))
 adjdat_cmb <- ComBat(cbind(sig_dat_adj, sub_val_mat), batch=batch_idx, mod=NULL, ref.batch=1)
-print(sum(adjdat_cmb[,1:ncol(sig_dat_adj)] != sig_dat_adj))
+#print(sum(adjdat_cmb[,1:ncol(sig_dat_adj)] != sig_dat_adj))
 
 
 ## Test sets 

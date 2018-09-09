@@ -1,7 +1,7 @@
 rm(list=ls())
 setwd("C:/Users/zhang/Google Drive/Johnson_Pathway/emt_signatures_reproduce/")
 sapply(c("GEOquery", "hthgu133a.db"), require, character.only=TRUE)
-
+# R -v 3.4.0, GEOquery 2.46.15, hthgu133a.db 3.2.3
 
 #### Read data 
 esets <- getGEO('GSE24202', GSEMatrix=TRUE)[[1]] 
@@ -19,7 +19,6 @@ x <- hthgu133aSYMBOL
 mapped_probes <- mappedkeys(x)
 xx <- as.data.frame(x[mapped_probes])
 head(xx)
-#length(intersect(xx[,2], rownames(sig_dat)))
 
 row_ind <- symbol_vec <- c()
 for(i in 1:nrow(dat.mat)){
