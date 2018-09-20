@@ -1,27 +1,15 @@
 rm(list=ls())
-setwd("/restricted/projectnb/pathsig/work/yuqingz/emtSig_v2/new_val/")
-
+setwd("C:/Users/zhang/Google Drive/Johnson_Pathway/emt_signatures_reproduce/")
+sapply(c("GEOquery", "hthgu133a.db"), require, character.only=TRUE)
+# R -v 3.4.0, GEOquery 2.46.15, hthgu133a.db 3.2.3
 
 #### Read data 
-library(GEOquery)
-library(Biobase)
-library(annotate)
-library(hthgu133a.db)
 esets <- getGEO('GSE24202', GSEMatrix=TRUE)[[1]] 
 dat.mat <- exprs(esets)
-meta.info <- read.csv("val_Taube_label.csv", header=TRUE)  
-
-#library(oligo)
-#library(pd.ht.hg.u133a)
-
-#celfiles <- list.celfiles('./', listGzipped=TRUE)
-#rawdata <- oligo::read.celfiles(celfiles)
-#esets <- oligo::rma(rawdata)
-#dat.mat <- exprs(esets)
-#meta.info <- read.csv("val_Taube_label.csv", header=TRUE)  
+meta.info <- read.csv("GSE24202_Taube_meta.csv", header=TRUE)  
 
 
-#### Log transform??
+#### Log transform
 dat.mat <- log2(dat.mat)
 dat.mat[1:5, 1:5]
 
@@ -31,7 +19,6 @@ x <- hthgu133aSYMBOL
 mapped_probes <- mappedkeys(x)
 xx <- as.data.frame(x[mapped_probes])
 head(xx)
-#length(intersect(xx[,2], rownames(sig_dat)))
 
 row_ind <- symbol_vec <- c()
 for(i in 1:nrow(dat.mat)){
@@ -44,13 +31,12 @@ for(i in 1:nrow(dat.mat)){
 # sanity check
 tmp <- xx$symbol
 names(tmp) <- xx$probe_id
-sum(tmp[rownames(dat.mat[row_ind, ])] != symbol_vec)
+identical(as.character(tmp[rownames(dat.mat[row_ind, ])]), symbol_vec)
 
-## new data  
+# new data  
 new.dat.mat <- dat.mat[row_ind, ]
 rownames(new.dat.mat) <- symbol_vec
 
 
 #### Save data
 save(new.dat.mat, meta.info, file="val_Taube.RData")
-

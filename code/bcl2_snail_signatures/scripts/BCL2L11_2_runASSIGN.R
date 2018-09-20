@@ -1,13 +1,11 @@
 rm(list=ls())
-#setwd("/restricted/projectnb/pathsig/work/yuqingz/emtSig_v2/")
-setwd("~/yuqingz/emtSig_reproduce/")
+setwd("/restricted/projectnb/pathsig/work/yuqingz/emtSig_reproduce/")
 sapply(c("sva", "ASSIGN"), require, character.only=TRUE)  
-# R -v 3.4.4, sva -v 3.24.4, ASSIGN -v 1.12.0
+# R -v 3.4.2, sva -v 3.24.4, ASSIGN -v 1.12.0
 
 
 ########  Load Signature Data  ########
-#data_path <- "/restricted/projectnb/pathsig/work/dfj/20161207_emtSignatures/rsubread/"
-data_path <- "./data/"
+data_path <- "/restricted/projectnb/pathsig/work/dfj/20161207_emtSignatures/rsubread/"
 dat1 <- read.table(paste(data_path, "emtSignatures_GFP_BCL2L11_SNAI_Twist.tpmlog", sep=""),
                    header=TRUE, row.names="Gene")
 dat1 <- dat1[, -which(colnames(dat1)=="BCL2L11.9")]  # remove BCL2L11-9
@@ -47,7 +45,7 @@ print(identical(rownames(sig_dat_adj), rownames(val_mat)))
 ## ref ComBat between train & test, signature data as the reference
 batch_idx <- c(rep(1, ncol(sig_dat_adj)), rep(2, ncol(val_mat)))
 adjdat_cmb <- ComBat(cbind(sig_dat_adj, val_mat), batch=batch_idx, mod=NULL, ref.batch=1)
-print(sum(adjdat_cmb[,1:ncol(sig_dat_adj)] != sig_dat_adj))
+#print(sum(adjdat_cmb[,1:ncol(sig_dat_adj)] != sig_dat_adj))
 
 
 ## Create input data list, each pathway as an element
@@ -75,4 +73,3 @@ for(ngene in ngene_seq){
   runassign(indata=val_indata, ngene=ngene, testname="Val_Elmore",
             outputpathname="./results/", exclude_geneList=exclGeneLst)
 }  
-
