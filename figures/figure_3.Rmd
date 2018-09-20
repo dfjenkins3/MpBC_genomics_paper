@@ -44,6 +44,8 @@ if(!all(colnames(nsolver_assign_adaptF_ALL) == rownames(sample_annot))){
 if(!all(colnames(genelist_sigs_all) == rownames(sample_annot))){
   stop("Annotation data and ASSIGN genelist scores do not match")
 }
+rownames(nsolver_assign_adaptF_ALL) <- c("AKT1","BAD","BCL2L11","HER2","IGF1R",
+                                         "KRASG12V","RAF1","SNAI1")
 ```
 
 ## Figure 3

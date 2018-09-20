@@ -55,12 +55,12 @@ plotTraining <- function(output.data, pathway_number, pathway){
 
 ```
 
-### AKT
+### AKT1
 
 ```{r akt, fig.width=4}
 akt_res <- readRDS("../results/akt_gene_list_adaptS_FALSE/output.rds")
-aktplot <- plotTraining(akt_res, 1, "AKT")
-
+colnames(akt_res$processed.data$trainingData_sub)[4:6] <- c("AKT1-1", "AKT1-2", "AKT1-3")
+aktplot <- plotTraining(akt_res, 1, "AKT1")
 ```
 
 ### BAD
@@ -70,11 +70,12 @@ bad_res <- readRDS("../results/bad_gene_list_adaptS_FALSE/output.rds")
 badplot <- plotTraining(bad_res, 1, "BAD")
 ```
 
-### BIM
+### BCL2L11
 
 ```{r bim, fig.width=4}
 bim_res <- readRDS("../results/bim_gene_list_adaptS_FALSE/output.rds")
-bimplot <- plotTraining(bim_res, 1, "BIM")
+colnames(bim_res$processed.data$trainingData_sub)[4:6] <- c("BCL2L11-1", "BCL2L11-2", "BCL2L11-3")
+bimplot <- plotTraining(bim_res, 1, "BCL2L11")
 ```
 
 ### HER2
@@ -91,25 +92,28 @@ igf1r_res <- readRDS("../results/igf1r_gene_list_adaptS_FALSE/output.rds")
 igf1rplot <- plotTraining(igf1r_res, 1, "IGF1R")
 ```
 
-### KRASGV
+### KRASG12V
 
 ```{r krasgv, fig.width=4}
 krasgv_res <- readRDS("../results/krasgv_gene_list_adaptS_FALSE/output.rds")
-krasplot <- plotTraining(krasgv_res, 1, "KRASGV")
+colnames(krasgv_res$processed.data$trainingData_sub)[4:6] <- c("KRASG12V-1", "KRASG12V-2", "KRASG12V-3")
+krasplot <- plotTraining(krasgv_res, 1, "KRASG12V")
 ```
 
-### RAF
+### RAF1
 
 ```{r raf, fig.width=4}
 raf_res <- readRDS("../results/raf_gene_list_adaptS_FALSE/output.rds")
-rafplot <- plotTraining(raf_res, 1, "RAF")
+colnames(raf_res$processed.data$trainingData_sub)[4:6] <- c("RAF1-1", "RAF1-2", "RAF1-3")
+rafplot <- plotTraining(raf_res, 1, "RAF1")
 ```
 
-### SNAIL
+### SNAI1
 
 ```{r snail, fig.width=4}
 snail_res <- readRDS("../results/snail_gene_list_adaptS_FALSE/output.rds")
-snailplot <- plotTraining(snail_res, 1, "SNAIL")
+colnames(snail_res$processed.data$trainingData_sub)[4:6] <- c("SNAI1-1", "SNAI1-2", "SNAI1-3")
+snailplot <- plotTraining(snail_res, 1, "SNAI1")
 ```
 
 ## Big Plot
